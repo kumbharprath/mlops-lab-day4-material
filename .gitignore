@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 data/*.csv
 .env
+Day4_Modular_Student_Lab_Guide.md

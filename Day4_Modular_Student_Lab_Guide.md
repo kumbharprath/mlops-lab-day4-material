@@ -103,12 +103,83 @@ python -m pytest --version
 Notice:
 
 ```python
-from fastapi import FastAPI
-app = FastAPI(...)
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
+app = FastAPI(title="MLOps API Demo")
+
+# Pydantic model for request validation
+class Student(BaseModel):
+    name: str
+    age: int
+    course: str
+
+
+# Temporary in-memory database
+students = {}
+
+
+# GET - Health check
 @app.get("/health")
 def health():
-    return {"status": "healthy", "model_loaded": True}
+    return {
+        "status": "healthy",
+        "model_loaded": True
+    }
+
+
+# GET - Fetch all students
+@app.get("/students")
+def get_students():
+    return students
+
+
+# GET - Fetch student by ID
+@app.get("/students/{student_id}")
+def get_student(student_id: int):
+    if student_id not in students:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return students[student_id]
+
+
+# POST - Create a new student
+@app.post("/students")
+def create_student(student_id: int, student: Student):
+    if student_id in students:
+        raise HTTPException(status_code=409, detail="Student already exists")
+
+    students[student_id] = student.model_dump()
+
+    return {
+        "message": "Student created successfully",
+        "student": students[student_id]
+    }
+
+
+# PUT - Update an existing student
+@app.put("/students/{student_id}")
+def update_student(student_id: int, student: Student):
+    if student_id not in students:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    students[student_id] = student.model_dump()
+
+    return {
+        "message": "Student updated successfully",
+        "student": students[student_id]
+    }
+
+
+# DELETE - Delete a student
+@app.delete("/students/{student_id}")
+def delete_student(student_id: int):
+    if student_id not in students:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    del students[student_id]
+
+    return {"message": "Student deleted successfully"}   
 ```
 
 The `@app.get` decorator connects an HTTP GET request to a Python function. FastAPI returns the Python dictionary as JSON. **The dots above are for explanation, not copy-and-paste code**—the complete working application is already in `app.py`.
@@ -116,7 +187,7 @@ The `@app.get` decorator connects an HTTP GET request to a Python function. Fast
 ### Step 2. Run Uvicorn
 
 ```bash
-python -m uvicorn app:app --reload
+python -m uvicorn demo_app:demo_app --reload
 ```
 
 **Expected:** `Uvicorn running on http://127.0.0.1:8000`. Keep this terminal open. If you need more commands, open **another** Git Bash terminal with `.venv` activated.
@@ -139,50 +210,264 @@ Open `/docs` → select **GET /health** → **Try it out** → **Execute**. **Ex
 
 ## Lab 3 — POST requests, JSON and Pydantic validation (2:15–2:30)
 
-### Step 1. Send a valid delivery request
+### Step 1. Test the GET /health API
 
-In `/docs`, expand **POST /predict**, select **Try it out**, replace the request body with:
+1. In Swagger UI, expand **GET /health**.
+2. Click **Try it out**.
+3. Click **Execute**.
 
+**Expected:** HTTP **200 OK**
+
+Response:
 ```json
 {
-  "distance_km": 12,
-  "raining": 1,
-  "heavy_traffic": 1
+  "status": "healthy",
+  "model_loaded": true
 }
 ```
 
-Click **Execute**. **Expected:** HTTP 200 and a response with `prediction` (0 or 1) and `status` (`On Time` or `Late Delivery`). The exact result comes from the trained model.
+**Explanation:** This endpoint checks whether our FastAPI application is responding. The `model_loaded` value is hardcoded for this demonstration.
 
-### Step 2. Try invalid input
+---
 
-```json
-{
-  "distance_km": -10,
-  "raining": 1,
-  "heavy_traffic": 1
-}
-```
+### Step 2. Create a student using POST
 
-**Expected:** HTTP **422** because distance cannot be negative (`Field(ge=0)`).
-
-### Step 3. Try a missing field
+1. Expand **POST /students**.
+2. Click **Try it out**.
+3. Enter `1` for the `student_id` query parameter.
+4. Replace the request body with:
 
 ```json
 {
-  "distance_km": 10,
-  "raining": 1
+  "name": "Rahul",
+  "age": 22,
+  "course": "MLOps"
 }
 ```
 
-**Expected:** HTTP **422** because `heavy_traffic` is required.
+5. Click **Execute**.
 
-### Step 4. Explain to a classmate
+**Expected:** HTTP **200 OK**
 
-- `POST` submits data for processing.
-- JSON is a structured text format for request and response bodies.
-- FastAPI routes requests; Pydantic validates the input before the trained model is called.
-- A successful HTTP 200 does not guarantee that the ML prediction is correct.
+Response:
+```json
+{
+  "message": "Student created successfully",
+  "student": {
+    "name": "Rahul",
+    "age": 22,
+    "course": "MLOps"
+  }
+}
+```
 
+**Explanation:** POST is used to create a new resource. FastAPI receives the JSON request body, and Pydantic checks that the required fields are provided with the expected data types.
+
+---
+
+### Step 3. Retrieve all students using GET
+
+1. Expand **GET /students**.
+2. Click **Try it out**.
+3. Click **Execute**.
+
+**Expected:** HTTP **200 OK**
+
+Response:
+```json
+{
+  "1": {
+    "name": "Rahul",
+    "age": 22,
+    "course": "MLOps"
+  }
+}
+```
+
+**Explanation:** The application retrieves all student records stored in the in-memory dictionary. JSON object keys are strings, so student ID `1` appears as `"1"` in the response.
+
+---
+
+### Step 4. Retrieve a specific student using GET
+
+1. Expand **GET /students/{student_id}**.
+2. Click **Try it out**.
+3. Enter `1` as `student_id`.
+4. Click **Execute**.
+
+**Expected:** HTTP **200 OK**
+
+Response:
+```json
+{
+  "name": "Rahul",
+  "age": 22,
+  "course": "MLOps"
+}
+```
+
+**Explanation:** The API searches the dictionary using the supplied student ID and returns the corresponding record.
+
+---
+
+### Step 5. Update a student using PUT
+
+1. Expand **PUT /students/{student_id}**.
+2. Click **Try it out**.
+3. Enter `1` as `student_id`.
+4. Replace the request body with:
+
+```json
+{
+  "name": "Rahul Sharma",
+  "age": 23,
+  "course": "Advanced MLOps"
+}
+```
+
+5. Click **Execute**.
+
+**Expected:** HTTP **200 OK**
+
+Response:
+```json
+{
+  "message": "Student updated successfully",
+  "student": {
+    "name": "Rahul Sharma",
+    "age": 23,
+    "course": "Advanced MLOps"
+  }
+}
+```
+
+**Explanation:** PUT replaces the existing student record with the updated information.
+
+---
+
+### Step 6. Test Pydantic validation with an invalid data type
+
+1. Expand **POST /students**.
+2. Click **Try it out**.
+3. Enter `2` as `student_id`.
+4. Provide the following JSON:
+
+```json
+{
+  "name": "Amit",
+  "age": "twenty",
+  "course": "Python"
+}
+```
+
+5. Click **Execute**.
+
+**Expected:** HTTP **422 Unprocessable Entity**
+
+**Explanation:** The `Student` Pydantic model defines `age` as an integer:
+
+```python
+class Student(BaseModel):
+    name: str
+    age: int
+    course: str
+```
+
+The value `"twenty"` cannot be converted into an integer, so Pydantic rejects the request.
+
+**Important:** The current model does not prevent negative ages. To add that validation, use `age: int = Field(ge=0)` and import `Field` from Pydantic.
+
+---
+
+### Step 7. Test Pydantic validation with a missing field
+
+1. Expand **POST /students**.
+2. Click **Try it out**.
+3. Enter `2` as `student_id`.
+4. Send this JSON:
+
+```json
+{
+  "name": "Amit",
+  "age": 21
+}
+```
+
+5. Click **Execute**.
+
+**Expected:** HTTP **422 Unprocessable Entity**
+
+**Explanation:** The `course` field is missing. Since all three fields are required in the `Student` Pydantic model, FastAPI rejects the request.
+
+---
+
+### Step 8. Test duplicate student creation
+
+1. Expand **POST /students**.
+2. Click **Try it out**.
+3. Enter the existing `student_id` as `1`.
+4. Send:
+
+```json
+{
+  "name": "Priya",
+  "age": 24,
+  "course": "DevOps"
+}
+```
+
+5. Click **Execute**.
+
+**Expected:** HTTP **409 Conflict**
+
+Response:
+```json
+{
+  "detail": "Student already exists"
+}
+```
+
+**Explanation:** Our application checks whether the student ID already exists before creating a new record. If the ID exists, the application raises an `HTTPException` with status code 409.
+
+---
+
+### Step 9. Delete a student using DELETE
+
+1. Expand **DELETE /students/{student_id}**.
+2. Click **Try it out**.
+3. Enter `1` as `student_id`.
+4. Click **Execute**.
+
+**Expected:** HTTP **200 OK**
+
+Response:
+```json
+{
+  "message": "Student deleted successfully"
+}
+```
+
+**Explanation:** DELETE removes the student with ID `1` from the in-memory dictionary.
+
+---
+
+### Step 10. Verify that the student was deleted
+
+1. Expand **GET /students/{student_id}**.
+2. Click **Try it out**.
+3. Enter `1` as `student_id`.
+4. Click **Execute**.
+
+**Expected:** HTTP **404 Not Found**
+
+Response:
+```json
+{
+  "detail": "Student not found"
+}
+```
+
+**Explanation:** The record no longer exists because Step 9 deleted it.
 ---
 
 ## Lab 4 — Modular ML training pipeline (2:30–2:45)
