@@ -4,11 +4,9 @@
 **Environment:** Windows 10/11, Git Bash, Python 3.11, VS Code, Docker Desktop (Linux containers). macOS/Linux alternatives are noted.  
 **Project:** Food Delivery Delay Prediction API
 
-> **START HERE:** Extract `Day4_MLOps_Modular_Project.zip`. Open the `mlops-day4` folder in VS Code. Run every terminal command **from inside `mlops-day4`**, unless a step explicitly says otherwise. The ZIP contains all Python files and a trained example model. You will regenerate the model during Lab 4.
 >
 > **Workshop-only data:** This project predicts using synthetic, fictional delivery records. It is not suitable for real-world dispatch decisions. Only load `.joblib` files you trust.
 >
-> **Important:** This guide matches the **modular Day 4 ZIP**, *not* the older single-file Day 4 package. Model training must be run using `python -m scripts.train_model`, **not** `python scripts/train_model.py`.
 
 ## What you will learn
 
@@ -44,7 +42,6 @@ mlops-day4/
 └── Day4_Modular_Student_Lab_Guide.md
 ```
 
-Files inside `data/` are created locally. A Python virtual environment (`.venv/`) is created by students. **Never send your `.venv/` folder to classmates.**
 
 ---
 
@@ -74,11 +71,11 @@ docker info
 ### Step 3. Create and activate a virtual environment
 
 ```bash
-python -m venv .venv
-source .venv/Scripts/activate
+python -m venv venv
+source venv/Scripts/activate
 ```
 
-For macOS/Linux, use `source .venv/bin/activate` instead of the Windows activation command. **Expected:** your shell prompt shows `(.venv)`.
+For macOS/Linux, use `source venv/bin/activate` instead of the Windows activation command. **Expected:** your shell prompt shows `(.venv)`.
 
 ### Step 4. Install Python dependencies
 
@@ -94,7 +91,7 @@ python -m pytest --version
 
 ---
 
-## Lab 2 — Run your first FastAPI endpoints (2:00–2:15)
+## Lab 2 — Run your first FastAPI endpoints
 
 `app.py` already contains three routes: `GET /`, `GET /health`, and `POST /predict`. We will learn the GET routes first, then explore the prediction route.
 
@@ -182,7 +179,6 @@ def delete_student(student_id: int):
     return {"message": "Student deleted successfully"}   
 ```
 
-The `@demo_app.get` decorator connects an HTTP GET request to a Python function. FastAPI returns the Python dictionary as JSON. **The dots above are for explanation, not copy-and-paste code**—the complete working application is already in `demo_app.py`.
 
 ### Step 2. Run Uvicorn
 
@@ -190,7 +186,7 @@ The `@demo_app.get` decorator connects an HTTP GET request to a Python function.
 python -m uvicorn demo_app:demo_app --reload
 ```
 
-**Expected:** `Uvicorn running on http://127.0.0.1:8000`. Keep this terminal open. If you need more commands, open **another** Git Bash terminal with `.venv` activated.
+**Expected:** `Uvicorn running on http://127.0.0.1:8000`. Keep this terminal open. If you need more commands, open **another** Git Bash terminal with `venv` activated.
 
 ### Step 3. Test in a browser
 
@@ -208,7 +204,7 @@ Open `/docs` → select **GET /health** → **Try it out** → **Execute**. **Ex
 
 ---
 
-## Lab 3 — POST requests, JSON and Pydantic validation (2:15–2:30)
+## Lab 3 — POST requests, JSON and Pydantic validation
 
 ### Step 1. Test the GET /health API
 
@@ -470,7 +466,7 @@ Response:
 **Explanation:** The record no longer exists because Step 9 deleted it.
 ---
 
-## Lab 4 — Modular ML training pipeline (2:30–2:45)
+## Lab 4 — Modular ML training pipeline 
 
 **Important:** The scripts are now separated exactly as in Day 3. Stop Uvicorn with **Ctrl+C** before demonstrating training; the API can be restarted afterward.
 
@@ -554,7 +550,7 @@ train_model.py
 
 ---
 
-## Lab 5 — Real FastAPI inference and automated tests (2:45–3:00)
+## Lab 5 — Real FastAPI inference and automated tests
 
 ### Step 1. Inspect the integration
 
@@ -603,7 +599,7 @@ Go to the terminal running Uvicorn and press **Ctrl+C**. Do this before Docker L
 
 ---
 
-## Lab 6 — Read and understand the Dockerfile (3:15–3:30)
+## Lab 6 — Read and understand the Dockerfile
 
 ### Step 1. Open the provided `Dockerfile`
 
@@ -647,7 +643,7 @@ If missing, run `python -m scripts.train_model` before the Docker build.
 
 ---
 
-## Lab 7 — Build Docker image and run container (3:30–3:45)
+## Lab 7 — Build Docker image and run container 
 
 ### Step 1. Ensure Docker Engine is available
 
@@ -700,7 +696,7 @@ Open `http://127.0.0.1:8000/docs`. The same FastAPI application now runs **insid
 
 ---
 
-## Lab 8 — Test the containerized API (3:45–4:05)
+## Lab 8 — Test the containerized API
 
 ### Step 1. Swagger UI
 
@@ -760,7 +756,7 @@ Try each of the following; each should yield HTTP **422**:
 
 ---
 
-## Lab 9 — Manage containers and ports (4:05–4:20)
+## Lab 9 — Manage containers and ports 
 
 ### Step 1. Inspect containers
 
@@ -806,7 +802,7 @@ docker images
 
 ---
 
-## Lab 10 — Final verification and recap (4:20–4:30)
+## Lab 10 — Final verification and recap
 
 From the `mlops-day4` root:
 
