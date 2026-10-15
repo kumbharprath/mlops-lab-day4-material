@@ -876,6 +876,3 @@ docker images
 - **Day 2:** We learned to train and manage models.
 - **Day 3:** We organized ML scripts, validated data, and automated quality checks.
 - **Day 4:** We separated training from serving, exposed predictions through FastAPI, and packaged the service with Docker.
-- **Day 5:** We will deploy the containerized prediction service to a cloud environment and explore monitoring.
-
-> **Validation note:** The Python data pipeline, model-saving step, and all **14 tests** were executed successfully for this modular project. A Docker Engine was not available in the preparation environment, so the image build and container run still need to be tested on a machine with Docker Desktop before the live workshop.
