@@ -98,7 +98,7 @@ python -m pytest --version
 
 `app.py` already contains three routes: `GET /`, `GET /health`, and `POST /predict`. We will learn the GET routes first, then explore the prediction route.
 
-### Step 1. Inspect `app.py`
+### Step 1. Inspect `demo_app.py`
 
 Notice:
 
@@ -106,7 +106,7 @@ Notice:
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI(title="MLOps API Demo")
+demo_app = FastAPI(title="MLOps API Demo")
 
 # Pydantic model for request validation
 class Student(BaseModel):
@@ -120,7 +120,7 @@ students = {}
 
 
 # GET - Health check
-@app.get("/health")
+@demo_app.get("/health")
 def health():
     return {
         "status": "healthy",
@@ -129,13 +129,13 @@ def health():
 
 
 # GET - Fetch all students
-@app.get("/students")
+@demo_app.get("/students")
 def get_students():
     return students
 
 
 # GET - Fetch student by ID
-@app.get("/students/{student_id}")
+@demo_app.get("/students/{student_id}")
 def get_student(student_id: int):
     if student_id not in students:
         raise HTTPException(status_code=404, detail="Student not found")
@@ -144,7 +144,7 @@ def get_student(student_id: int):
 
 
 # POST - Create a new student
-@app.post("/students")
+@demo_app.post("/students")
 def create_student(student_id: int, student: Student):
     if student_id in students:
         raise HTTPException(status_code=409, detail="Student already exists")
@@ -158,7 +158,7 @@ def create_student(student_id: int, student: Student):
 
 
 # PUT - Update an existing student
-@app.put("/students/{student_id}")
+@demo_app.put("/students/{student_id}")
 def update_student(student_id: int, student: Student):
     if student_id not in students:
         raise HTTPException(status_code=404, detail="Student not found")
@@ -172,7 +172,7 @@ def update_student(student_id: int, student: Student):
 
 
 # DELETE - Delete a student
-@app.delete("/students/{student_id}")
+@demo_app.delete("/students/{student_id}")
 def delete_student(student_id: int):
     if student_id not in students:
         raise HTTPException(status_code=404, detail="Student not found")
@@ -182,7 +182,7 @@ def delete_student(student_id: int):
     return {"message": "Student deleted successfully"}   
 ```
 
-The `@app.get` decorator connects an HTTP GET request to a Python function. FastAPI returns the Python dictionary as JSON. **The dots above are for explanation, not copy-and-paste code**—the complete working application is already in `app.py`.
+The `@demo_app.get` decorator connects an HTTP GET request to a Python function. FastAPI returns the Python dictionary as JSON. **The dots above are for explanation, not copy-and-paste code**—the complete working application is already in `demo_app.py`.
 
 ### Step 2. Run Uvicorn
 
